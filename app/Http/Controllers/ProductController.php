@@ -94,6 +94,7 @@ class ProductController extends Controller
 
         return response()->json(['success' => 'Product deleted successfully.']);
     }
+
     public function deleteImage(Request $request)
     {
         $product = Product::find($request->product_id);

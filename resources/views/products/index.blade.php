@@ -37,7 +37,7 @@
                 </td>
                 <td>
                     <button class="btn btn-warning" onclick="showEditForm({{ $product->id }})">Edit</button>
-                    <button class="btn btn-danger" onclick="deleteProduct({{ $product->id }})">Delete</button>
+                    <button class="btn btn-danger" onclick="showDeleteModal({{ $product->id }})">Delete</button>
                 </td>
             </tr>
         @endforeach
@@ -80,13 +80,31 @@
     </div>
 </div>
 
+<!-- Delete Confirmation Modal -->
+<div class="modal" id="deleteModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Product</h5>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this product?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteButton">Delete</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
 <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
 
 <script>
-    $(document).ready(function() {
+    $(document).ready(function () {
         $('#productTable').DataTable();
 
         $.ajaxSetup({
@@ -157,14 +175,39 @@
                         $('#productModal').modal('hide');
                         location.reload();
                     },
-                    error: function(response) {
+                    error: function (response) {
                         alert('Error: ' + response.responseJSON.message);
                     }
                 });
             });
         });
     }
-    $(document).on('click', '.delete-image', function() {
+
+    function showDeleteModal(id) {
+        $('#confirmDeleteButton').data('id', id);
+        $('#deleteModal').modal('show');
+    }
+
+    $(document).on('click', '#confirmDeleteButton', function () {
+        const id = $(this).data('id');
+
+        $.ajax({
+            url: "{{ url('products') }}/" + id,
+            method: 'DELETE',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (response) {
+                $('#deleteModal').modal('hide');
+                location.reload();
+            },
+            error: function (response) {
+                alert('Error: ' + response.responseJSON.message);
+            }
+        });
+    });
+
+    $(document).on('click', '.delete-image', function () {
         const productId = $(this).data('id');
         const imageName = $(this).data('image');
         const imageContainer = $(this).parent();
@@ -185,22 +228,6 @@
             }
         });
     });
-
-
-    function deleteProduct(id) {
-        if (confirm('Are you sure you want to delete this product?')) {
-            $.ajax({
-                url: "{{ url('products') }}/" + id,
-                method: 'DELETE',
-                success: function(response) {
-                    location.reload();
-                },
-                error: function(response) {
-                    alert('Error: ' + response.responseJSON.message);
-                }
-            });
-        }
-    }
 </script>
 </body>
 </html>
