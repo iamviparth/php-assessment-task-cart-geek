@@ -94,4 +94,24 @@ class ProductController extends Controller
 
         return response()->json(['success' => 'Product deleted successfully.']);
     }
+    public function deleteImage(Request $request)
+    {
+        $product = Product::find($request->product_id);
+        $images = json_decode($product->product_images, true);
+
+        if (($key = array_search($request->image_name, $images)) !== false) {
+            unset($images[$key]);
+
+            // Delete the image file from storage
+            Storage::disk('public')->delete($request->image_name);
+
+            // Update the product's image list
+            $product->product_images = json_encode(array_values($images));
+            $product->save();
+
+            return response()->json(['success' => 'Image deleted successfully.']);
+        }
+
+        return response()->json(['error' => 'Image not found.'], 404);
+    }
 }

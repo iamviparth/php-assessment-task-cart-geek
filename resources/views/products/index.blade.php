@@ -46,7 +46,6 @@
 </div>
 
 <!-- Create/Edit Form Modal -->
-<!-- Create/Edit Form Modal -->
 <div class="modal" id="productModal">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -132,10 +131,15 @@
 
             // Clear previous images
             $('#current_images').empty();
-            // Display current images
+            // Display current images with delete button
             let images = JSON.parse(product.product_images);
             images.forEach(function(image) {
-                $('#current_images').append(`<img src="{{ asset('storage/') }}/${image}" width="50" height="50">`);
+                $('#current_images').append(`
+                    <div class="image-container">
+                        <img src="{{ asset('storage/') }}/${image}" width="50" height="50">
+                        <button class="btn btn-danger btn-sm delete-image" data-id="${product.id}" data-image="${image}">Delete</button>
+                    </div>
+                `);
             });
 
             $('#productModal').modal('show');
@@ -160,6 +164,27 @@
             });
         });
     }
+    $(document).on('click', '.delete-image', function() {
+        const productId = $(this).data('id');
+        const imageName = $(this).data('image');
+        const imageContainer = $(this).parent();
+
+        $.ajax({
+            url: "{{ url('products/delete-image') }}",
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}',
+                product_id: productId,
+                image_name: imageName
+            },
+            success: function(response) {
+                imageContainer.remove();
+            },
+            error: function(response) {
+                alert('Error: ' + response.responseJSON.message);
+            }
+        });
+    });
 
 
     function deleteProduct(id) {

@@ -7,4 +7,6 @@ Route::get('/', function () {
     return view('welcome');
 });
 Route::resource('products', ProductController::class);
+Route::post('products/delete-image', [ProductController::class, 'deleteImage'])->name('products.deleteImage');
+
 
